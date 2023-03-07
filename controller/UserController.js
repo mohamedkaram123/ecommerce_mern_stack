@@ -35,6 +35,7 @@ const createUser = asyncHandller(async (req,res)=>{
 })
 
 const loginUser = asyncHandller(async (req,res)=>{
+    
     const {email,password} = req.body
     const findUser = await User.findOne({email})
     const user_pass = await findUser.isPassword(password)
@@ -61,6 +62,38 @@ const loginUser = asyncHandller(async (req,res)=>{
         throw new Error("Invalid Credentials")
     }
 })
+
+
+const loginAdmin = asyncHandller(async (req,res)=>{
+    
+    const {email,password} = req.body
+    const findAdmin = await User.findOne({email})
+    if(findAdmin.role !== "admin") throw new Error("the user not authrized")
+    const user_pass = await findAdmin.isPassword(password)
+    const refreshToken = await generateRefreshToken(findAdmin._id)
+
+    const user = await User.findByIdAndUpdate(findAdmin._id,{
+        refreshToken:refreshToken,
+    },{new:true})
+
+    res.cookie("refreshToken",refreshToken,{
+        httpOnly:true,
+        maxAge:72 * 60 * 60 * 1000
+    })
+
+    if(user_pass){
+        res.json({
+            "msg":"success",
+            "user":{
+                ...user._doc,
+                token:generateToken(findAdmin._id)
+            }
+        })
+    }else{
+        throw new Error("Invalid Credentials")
+    }
+})
+
 
 const get_all_users = asyncHandller(async (req,res)=>{
     const users = await User.find();
@@ -330,6 +363,35 @@ const reset_password_update = asyncHandller(async (req,res)=>{
         throw new Error(error)
        }
  })
+
+const getUserWishlist = asyncHandller(async (req,res)=>{
+    let {_id} = req.user
+    validateMongoDbId(_id)
+
+   try {
+        let user = await User.findById(_id)
+                    .populate('wishlist') // Populate the wishlist array with the actual product objects
+        res.json({wishlist:user.wishlist})
+     } catch (error) {
+       throw new Error(error)
+      }
+})
+
+const saveAddress = asyncHandller(async (req,res)=>{
+    let {_id} = req.user
+    validateMongoDbId(_id)
+   try {
+    let {address} = req.body
+      let user = await User.findByIdAndUpdate(_id,{
+        address
+      },{
+        new :true
+      })
+      res.json(user)
+    } catch (error) {
+       throw new Error(error)
+      }
+})
  
 module.exports = {
     createUser,
@@ -346,5 +408,8 @@ module.exports = {
     test_send_mail,
     forget_pass,
     reset_password,
-    reset_password_update
+    reset_password_update,
+    loginAdmin,
+    getUserWishlist,
+    saveAddress
 }

@@ -1,11 +1,13 @@
 const express = require("express");
-const { createUser,loginUser,get_all_users, get_user, delete_user, update_user, test_login, block_user, unblock_user, handleRefreshToken, logout, update_password, test_send_mail, forget_pass, reset_password, reset_password_update } = require("../controller/UserController");
+const { createUser,loginUser,get_all_users, get_user, delete_user, update_user, test_login, block_user, unblock_user, handleRefreshToken, logout, update_password, test_send_mail, forget_pass, reset_password, reset_password_update, loginAdmin, getUserWishlist, saveAddress } = require("../controller/UserController");
 const { AuthMiddleware, IsAdmin } = require("../middlewares/Auth");
-const { validate_update_user, validate_forget_pass } = require("../middlewares/Validate");
+const { validate_update_user, validate_forget_pass, validate_check_user_exist } = require("../middlewares/Validate");
 const router = express.Router();
 
 router.post("/register",createUser)
-router.post("/login",loginUser)
+router.post("/login",validate_check_user_exist,loginUser)
+router.post("/login-admin",validate_check_user_exist,loginAdmin)
+
 router.get("/users",AuthMiddleware,IsAdmin,get_all_users)
 router.get("/single-user/:id",AuthMiddleware,IsAdmin,get_user)
 router.delete("/delete-user/:id",AuthMiddleware,IsAdmin,delete_user)
@@ -21,6 +23,9 @@ router.get("/reset-password/:token",reset_password)
 router.put("/reset-password",reset_password_update)
 
 router.get("/test_send_mail",test_send_mail)
+router.get("/wishlist",AuthMiddleware,getUserWishlist)
+
+router.put("/save-address",AuthMiddleware,saveAddress)
 
 
 module.exports = router

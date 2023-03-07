@@ -2,7 +2,7 @@ const mongoose = require('mongoose'); // Erase if already required
 const bcrypt = require('bcrypt');
 
 // Declare the Schema of the Mongo model
-var userSchema = new mongoose.Schema({
+var prodSchema = new mongoose.Schema({
     title:{
         type:String,
         required:true,
@@ -38,9 +38,14 @@ var userSchema = new mongoose.Schema({
         type:Number,
         default:0,
     },
-    images:[{
-        type:Array,
-    }],
+    images:[
+        {
+            url:String,
+            secure_url:String,
+            main_file:String
+
+        }
+    ],
     color:{
         type:String,
         required:true,
@@ -48,12 +53,17 @@ var userSchema = new mongoose.Schema({
     ratings:[
         {
             star:Number,
+            comment:String,
             posted_by:{
                 type:mongoose.Schema.Types.ObjectId,
                 ref:"User",
             }
         }
-    ]
+    ],
+    total_rating:{
+        type:String,
+        default:0
+    }
 },
 {
     timestamps:true
@@ -62,4 +72,4 @@ var userSchema = new mongoose.Schema({
 
   
 //Export the model
-module.exports = mongoose.model('Product', userSchema);
+module.exports = mongoose.model('Product', prodSchema);

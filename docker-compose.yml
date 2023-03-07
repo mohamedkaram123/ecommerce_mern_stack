@@ -1,0 +1,21 @@
+version: '2'
+services:
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+  node-app:
+    container_name: express-app-node-container
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    volumes:
+      - ./controller:/app/controller:ro
+    env_file:
+      - ./.env
+
+volumes:
+  data:
